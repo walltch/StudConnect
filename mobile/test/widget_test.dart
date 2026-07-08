@@ -1,23 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:studconnect/data/app_database.dart';
-import 'package:studconnect/data/repository.dart';
 import 'package:studconnect/main.dart';
 
-Future<AppRepository> _testRepository() async {
-  sqfliteFfiInit();
-  final db = await AppDatabase.open(
-    factory: databaseFactoryFfi,
-    dbPath: inMemoryDatabasePath,
-  );
-  return AppRepository.create(db);
-}
+import 'support/test_repository.dart';
 
 void main() {
   testWidgets('app boots on the feed tab with the bottom nav visible', (
     tester,
   ) async {
-    final repository = await _testRepository();
+    final repository = await buildTestRepository();
     await tester.pumpWidget(StudConnectApp(repository: repository));
     await tester.pumpAndSettle();
 
@@ -28,7 +18,7 @@ void main() {
   });
 
   testWidgets('bottom nav switches tabs', (tester) async {
-    final repository = await _testRepository();
+    final repository = await buildTestRepository();
     await tester.pumpWidget(StudConnectApp(repository: repository));
     await tester.pumpAndSettle();
 
