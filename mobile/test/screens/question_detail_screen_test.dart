@@ -18,8 +18,9 @@ Widget _harness(AppRepository repo, String questionId) {
 
 void main() {
   testWidgets('renders the question and its answers (US3)', (tester) async {
-    final repo = await buildTestRepository();
-    addTearDown(repo.close);
+    final repo = (await tester.runAsync(buildTestRepository))!;
+    addTearDown(() => tester.runAsync(repo.close));
+    useTallTestViewport(tester);
     await tester.pumpWidget(_harness(repo, 'q1'));
     await settle(tester);
 
@@ -34,8 +35,9 @@ void main() {
   testWidgets('submitting the composer adds a real answer (US7)', (
     tester,
   ) async {
-    final repo = await buildTestRepository();
-    addTearDown(repo.close);
+    final repo = (await tester.runAsync(buildTestRepository))!;
+    addTearDown(() => tester.runAsync(repo.close));
+    useTallTestViewport(tester);
     await tester.pumpWidget(_harness(repo, 'q4')); // q4 has 0 answers
     await settle(tester);
 
@@ -45,6 +47,7 @@ void main() {
       find.byType(TextField),
       'Voici une reponse de test bien detaillee.',
     );
+    await settle(tester);
     await tester.tap(find.text('Publier ma réponse'));
     await settle(tester);
 
@@ -60,8 +63,9 @@ void main() {
   testWidgets('"Je ne peux pas aider" toggles dismissal (US7)', (
     tester,
   ) async {
-    final repo = await buildTestRepository();
-    addTearDown(repo.close);
+    final repo = (await tester.runAsync(buildTestRepository))!;
+    addTearDown(() => tester.runAsync(repo.close));
+    useTallTestViewport(tester);
     // q1 is authored by bob, not the current user (wall), so the
     // response actions row is shown.
     await tester.pumpWidget(_harness(repo, 'q1'));
@@ -78,8 +82,9 @@ void main() {
   testWidgets(
     'author can mark an answer as the validated solution (US4)',
     (tester) async {
-      final repo = await buildTestRepository();
-    addTearDown(repo.close);
+      final repo = (await tester.runAsync(buildTestRepository))!;
+      addTearDown(() => tester.runAsync(repo.close));
+    useTallTestViewport(tester);
       // q2 is authored by wall (current user) and has one unvalidated
       // answer (a3, by alice) — the author sees "Marquer comme solution".
       await tester.pumpWidget(_harness(repo, 'q2'));
@@ -100,8 +105,9 @@ void main() {
   testWidgets('shows "Question introuvable" for an unknown id', (
     tester,
   ) async {
-    final repo = await buildTestRepository();
-    addTearDown(repo.close);
+    final repo = (await tester.runAsync(buildTestRepository))!;
+    addTearDown(() => tester.runAsync(repo.close));
+    useTallTestViewport(tester);
     await tester.pumpWidget(_harness(repo, 'does-not-exist'));
     await settle(tester);
 
