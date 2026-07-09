@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studconnect/main.dart';
 
+import 'support/pump_helpers.dart';
 import 'support/test_repository.dart';
 
 void main() {
@@ -8,8 +9,9 @@ void main() {
     tester,
   ) async {
     final repository = await buildTestRepository();
+    addTearDown(repository.close);
     await tester.pumpWidget(StudConnectApp(repository: repository));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     expect(find.text("Fil d'actualité"), findsWidgets);
     expect(find.text('Rechercher'), findsOneWidget);
@@ -19,11 +21,12 @@ void main() {
 
   testWidgets('bottom nav switches tabs', (tester) async {
     final repository = await buildTestRepository();
+    addTearDown(repository.close);
     await tester.pumpWidget(StudConnectApp(repository: repository));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     await tester.tap(find.text('Profil'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('Profil'), findsWidgets);
   });
 }

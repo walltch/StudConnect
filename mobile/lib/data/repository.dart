@@ -408,4 +408,11 @@ class AppRepository extends ChangeNotifier {
     _idCounter++;
     return '${DateTime.now().microsecondsSinceEpoch}_$_idCounter';
   }
+
+  /// Releases the underlying SQLite connection. Widget tests must await
+  /// this in tearDown — otherwise in-memory sqflite_common_ffi
+  /// connections accumulate across the suite and eventually stall new
+  /// opens. `ChangeNotifier.dispose()` can't be overridden with an async
+  /// signature, so this is a separate method rather than `dispose()`.
+  Future<void> close() => _db.close();
 }
