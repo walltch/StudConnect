@@ -8,6 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/time_ago.dart';
 import '../../widgets/questions/tag_pill.dart';
+import '../../widgets/shared/user_avatar.dart';
 
 /// US3 (voir les discussions) + US7 (répondre / indiquer qu'on ne peut
 /// pas aider), contribue aussi à US4 (l'auteur peut marquer une réponse
@@ -201,18 +202,7 @@ class _QuestionHeader extends StatelessWidget {
                 style: TextStyle(color: AppColors.slate600, fontSize: 12),
               ),
               const Spacer(),
-              CircleAvatar(
-                radius: 12,
-                backgroundColor: AppColors.brand100,
-                child: Text(
-                  question.author.avatar,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.brand700,
-                  ),
-                ),
-              ),
+              UserAvatar(user: question.author, radius: 12),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
@@ -339,18 +329,7 @@ class _AnswerTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      CircleAvatar(
-                        radius: 10,
-                        backgroundColor: AppColors.brand100,
-                        child: Text(
-                          answer.author.avatar,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.brand700,
-                          ),
-                        ),
-                      ),
+                      UserAvatar(user: answer.author, radius: 10),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(

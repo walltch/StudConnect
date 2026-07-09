@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:studconnect/data/app_database.dart';
 import 'package:studconnect/data/repository.dart';
@@ -12,11 +13,13 @@ void main() {
   late AppRepository repo;
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     final db = await AppDatabase.open(
       factory: databaseFactoryFfi,
       dbPath: inMemoryDatabasePath,
     );
     repo = await AppRepository.create(db);
+    await repo.logIn('wall');
   });
 
   // In-memory sqflite_common_ffi connections must be closed explicitly,
@@ -27,8 +30,9 @@ void main() {
   });
 
   group('seed data', () {
-    test('loads the 4 seed users and 4 seed questions', () async {
-      expect(repo.questions.length, 4);
+    test('loads the 7 seed users and 5 seed questions', () async {
+      expect(repo.allUsers.length, 7);
+      expect(repo.questions.length, 5);
       expect(repo.currentUser.id, 'wall');
     });
 
@@ -128,6 +132,17 @@ void main() {
       expect(repo.currentUser.year, 'M2');
     });
 
+    test('updateProfile changes name and recomputes initials', () async {
+      await repo.updateProfile(name: 'Léa Martin');
+      expect(repo.currentUser.name, 'Léa Martin');
+      expect(repo.currentUser.avatar, 'LM');
+    });
+
+    test('updateProfile changes avatarColor', () async {
+      await repo.updateProfile(avatarColor: 0xFF000000);
+      expect(repo.currentUser.avatarColor, 0xFF000000);
+    });
+
     test(
       'addSkill/removeSkill mutate skills list without duplicates',
       () async {
@@ -140,6 +155,68 @@ void main() {
         expect(repo.currentUser.skills.length, before);
       },
     );
+  });
+
+  group('comptes locaux', () {
+    test('starts logged out until logIn/signUp is called', () async {
+      SharedPreferences.setMockInitialValues({});
+      final db = await AppDatabase.open(
+        factory: databaseFactoryFfi,
+        dbPath: inMemoryDatabasePath,
+      );
+      final fresh = await AppRepository.create(db);
+      expect(fresh.isLoggedIn, isFalse);
+      expect(fresh.currentUserOrNull, isNull);
+      expect(() => fresh.currentUser, throwsStateError);
+      await fresh.close();
+    });
+
+    test('allUsers lists every seed persona, including teammates', () {
+      final names = repo.allUsers.map((u) => u.name).toSet();
+      expect(names, containsAll(['Anis Boua', 'Samy Berrari', 'Charles Keita']));
+    });
+
+    test('logIn switches currentUser and persists across a fresh repo', () async {
+      SharedPreferences.setMockInitialValues({});
+      final db = await AppDatabase.open(
+        factory: databaseFactoryFfi,
+        dbPath: inMemoryDatabasePath,
+      );
+      final repo1 = await AppRepository.create(db);
+      await repo1.logIn('bob');
+      expect(repo1.currentUser.id, 'bob');
+
+      // Re-open a repository against the *same* database/session store,
+      // simulating an app relaunch.
+      final repo2 = await AppRepository.create(db);
+      expect(repo2.currentUser.id, 'bob');
+      await repo1.close();
+    });
+
+    test('logOut clears the session', () async {
+      expect(repo.isLoggedIn, isTrue);
+      await repo.logOut();
+      expect(repo.isLoggedIn, isFalse);
+      expect(repo.currentUserOrNull, isNull);
+    });
+
+    test('signUp creates a new local account and logs into it', () async {
+      final before = repo.allUsers.length;
+      final created = await repo.signUp(
+        name: 'Léa Martin',
+        school: 'ESGI Bordeaux',
+        field: 'Bachelor Réseaux',
+        year: 'B1',
+        avatarColor: 0xFF123456,
+      );
+
+      expect(repo.allUsers.length, before + 1);
+      expect(repo.isLoggedIn, isTrue);
+      expect(repo.currentUser.id, created.id);
+      expect(repo.currentUser.name, 'Léa Martin');
+      expect(repo.currentUser.avatar, 'LM');
+      expect(repo.currentUser.reputation, 0);
+    });
   });
 
   group('feed/search (US6)', () {

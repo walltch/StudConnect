@@ -31,6 +31,19 @@ class AppColors {
     colors: [brand600, Color(0xFF7C3AED)],
   );
 
+  /// Choices offered by the avatar color picker (signup + edit profile).
+  /// All dark/saturated enough that white initials stay readable on top.
+  static const List<Color> avatarPalette = [
+    brand600,
+    Color(0xFFE11D48), // rose
+    Color(0xFF0891B2), // cyan
+    Color(0xFF7C3AED), // violet
+    Color(0xFF10B981), // emerald
+    Color(0xFFD97706), // amber
+    Color(0xFF0F766E), // teal
+    accent600,
+  ];
+
   /// Mirrors TAG_COLORS from src/lib/mock-data.ts: (background, text) per tag.
   static const Map<String, (Color, Color)> tagColors = {
     'Informatique': (Color(0xFFDBEAFE), Color(0xFF1D4ED8)),

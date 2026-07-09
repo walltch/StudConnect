@@ -26,7 +26,7 @@ class StudConnectApp extends StatelessWidget {
         title: 'StudConnect',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        routerConfig: buildAppRouter(),
+        routerConfig: buildAppRouter(repository),
       ),
     );
   }

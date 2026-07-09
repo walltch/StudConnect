@@ -3,18 +3,20 @@ import '../models/question.dart';
 import '../models/tag.dart';
 import '../models/user.dart';
 
-/// Mirrors src/lib/mock-data.ts from the web app: same 4 users, same 4
-/// questions (q1-q4) with the same denormalized answers (a1-a4). `wall`
-/// is the current/logged-in user on both clients.
+/// Mirrors src/lib/mock-data.ts from the web app: same 4 base users, same
+/// 4 base questions (q1-q4) with the same denormalized answers (a1-a4),
+/// plus 3 teammates (Anis, Samy, Charles) added as a nod to the group
+/// working on this project. All of them are real local accounts you can
+/// log into from the welcome screen — none is hardcoded as "the" user
+/// anymore (see AppRepository.logIn/signUp).
 class SeedData {
   SeedData._();
-
-  static const currentUserId = 'wall';
 
   static final alice = User(
     id: 'alice',
     name: 'Alice Moreau',
     avatar: 'AM',
+    avatarColor: 0xFF7C3AED, // violet
     school: 'ESGI Bordeaux',
     field: 'Mastère IA & Big Data',
     year: 'M2',
@@ -29,6 +31,7 @@ class SeedData {
     id: 'bob',
     name: 'Bob Lefevre',
     avatar: 'BL',
+    avatarColor: 0xFF0891B2, // cyan
     school: 'ESGI Paris',
     field: 'Bachelor Développement Web',
     year: 'B2',
@@ -43,6 +46,7 @@ class SeedData {
     id: 'clara',
     name: 'Clara Dupuis',
     avatar: 'CD',
+    avatarColor: 0xFF10B981, // emerald
     school: 'Université Lyon 2',
     field: 'Mastère Data Science',
     year: 'M1',
@@ -57,6 +61,7 @@ class SeedData {
     id: 'wall',
     name: 'Wall Fatah T.',
     avatar: 'WF',
+    avatarColor: 0xFF4F46E5, // brand
     school: 'ESGI Bordeaux',
     field: 'Mastère IA & Big Data',
     year: 'M1',
@@ -67,7 +72,52 @@ class SeedData {
     joinedAt: DateTime.parse('2025-12-20'),
   );
 
-  static List<User> get users => [alice, bob, clara, wall];
+  static final anis = User(
+    id: 'anis',
+    name: 'Anis Boua',
+    avatar: 'AB',
+    avatarColor: 0xFFD97706, // amber
+    school: 'ESGI Bordeaux',
+    field: 'Mastère Cybersécurité',
+    year: 'M1',
+    skills: const ['Réseaux', 'Pentest', 'Linux'],
+    reputation: 410,
+    answersCount: 6,
+    questionsCount: 1,
+    joinedAt: DateTime.parse('2025-09-08'),
+  );
+
+  static final samy = User(
+    id: 'samy',
+    name: 'Samy Berrari',
+    avatar: 'SB',
+    avatarColor: 0xFF0F766E, // teal
+    school: 'ESGI Bordeaux',
+    field: 'Bachelor DevOps & Cloud',
+    year: 'B3',
+    skills: const ['Docker', 'Kubernetes', 'CI/CD'],
+    reputation: 265,
+    answersCount: 4,
+    questionsCount: 2,
+    joinedAt: DateTime.parse('2025-09-08'),
+  );
+
+  static final charles = User(
+    id: 'charles',
+    name: 'Charles Keita',
+    avatar: 'CK',
+    avatarColor: 0xFFE11D48, // rose
+    school: 'ESGI Bordeaux',
+    field: 'Mastère Ingénierie Informatique',
+    year: 'M1',
+    skills: const ['Rust', 'PowerShell', 'DevOps', 'Réseaux'],
+    reputation: 380,
+    answersCount: 5,
+    questionsCount: 0,
+    joinedAt: DateTime.parse('2025-09-08'),
+  );
+
+  static List<User> get users => [alice, bob, clara, wall, anis, samy, charles];
 
   /// Each entry pairs a seed Question with its seed Answers (the join is
   /// done here, once, instead of scattering FK wiring across the file).
@@ -165,6 +215,22 @@ class SeedData {
           createdAt: DateTime.parse('2026-01-15T11:00:00Z'),
           hasUpvoted: false,
         ),
+        Answer(
+          id: 'a6',
+          questionId: 'q2',
+          authorId: charles.id,
+          author: charles,
+          content:
+              "Pareil en stage : j'ai fini par lui envoyer un mini cahier des "
+              "charges que je rédigeais moi-même à partir de ses phrases "
+              "vagues, en lui demandant juste de valider par 'ok' ou 'non'. "
+              "Ça prend 5 min à son niveau à lui, et toi t'as un vrai cadre "
+              "écrit à montrer si jamais ça part en confusion plus tard.",
+          upvotes: 9,
+          isValidated: false,
+          createdAt: DateTime.parse('2026-01-16T10:20:00Z'),
+          hasUpvoted: false,
+        ),
       ],
     ),
     (
@@ -228,6 +294,46 @@ class SeedData {
         isSolved: false,
         views: 344,
         createdAt: DateTime.parse('2026-03-10T09:00:00Z'),
+      ),
+      [
+        Answer(
+          id: 'a5',
+          questionId: 'q4',
+          authorId: samy.id,
+          author: samy,
+          content:
+              "Chez nous c'était 30-40 pages hors annexes. Pas de code brut "
+              "dans le corps du rapport (mets-le en annexe ou en lien GitHub), "
+              "le jury veut lire ton raisonnement pas ton code. Structure qui "
+              "a bien marché : contexte entreprise (court) → problématique → "
+              "missions/méthode → résultats → bilan personnel.",
+          upvotes: 6,
+          isValidated: false,
+          createdAt: DateTime.parse('2026-03-10T13:10:00Z'),
+          hasUpvoted: false,
+        ),
+      ],
+    ),
+    (
+      Question(
+        id: 'q5',
+        title:
+            'Authentification par email universitaire : OTP ou lien magique, lequel implémenter en premier ?',
+        content:
+            "Pour un projet d'entraide étudiante, on doit restreindre "
+            "l'inscription aux emails de l'école. Entre un code OTP envoyé "
+            "par email et un lien magique cliquable, lequel est le plus "
+            "simple et sûr à mettre en place pour un projet de cours (pas de "
+            "vrai budget infra) ?",
+        authorId: anis.id,
+        author: anis,
+        tag: Tag.informatique,
+        answers: const [],
+        upvotes: 12,
+        hasUpvoted: false,
+        isSolved: false,
+        views: 87,
+        createdAt: DateTime.parse('2026-06-30T09:30:00Z'),
       ),
       [],
     ),

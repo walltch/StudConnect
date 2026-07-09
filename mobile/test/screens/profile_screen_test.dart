@@ -11,6 +11,13 @@ import '../support/test_repository.dart';
 Widget _harness(AppRepository repo) {
   final router = GoRouter(
     initialLocation: '/profile',
+    refreshListenable: repo,
+    redirect: (context, state) {
+      if (!repo.isLoggedIn && state.matchedLocation != '/login') {
+        return '/login';
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/profile',
@@ -29,6 +36,10 @@ Widget _harness(AppRepository repo) {
         builder: (context, state) => Scaffold(
           body: Text('question-detail-${state.pathParameters['id']}'),
         ),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const Scaffold(body: Text('login-screen')),
       ),
     ],
   );
@@ -73,6 +84,41 @@ void main() {
     await settle(tester);
 
     expect(repo.currentUser.year, 'M2');
+  });
+
+  testWidgets('editing profile can also change the name and avatar color', (
+    tester,
+  ) async {
+    final repo = (await tester.runAsync(buildTestRepository))!;
+    addTearDown(() => tester.runAsync(repo.close));
+    useTallTestViewport(tester);
+    await tester.pumpWidget(_harness(repo));
+    await settle(tester);
+
+    await tester.tap(find.byIcon(Icons.edit_outlined).first);
+    await settle(tester);
+
+    final nameField = find.widgetWithText(TextField, 'Wall Fatah T.');
+    await tester.enterText(nameField, 'Wall Renamed');
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Enregistrer'));
+    await settle(tester);
+
+    expect(repo.currentUser.name, 'Wall Renamed');
+    expect(repo.currentUser.avatar, 'WR');
+  });
+
+  testWidgets('logging out routes back to the login screen', (tester) async {
+    final repo = (await tester.runAsync(buildTestRepository))!;
+    addTearDown(() => tester.runAsync(repo.close));
+    useTallTestViewport(tester);
+    await tester.pumpWidget(_harness(repo));
+    await settle(tester);
+
+    await tester.tap(find.byIcon(Icons.logout));
+    await settle(tester);
+
+    expect(repo.isLoggedIn, isFalse);
+    expect(find.text('login-screen'), findsOneWidget);
   });
 
   testWidgets('adding a skill persists it (US2)', (tester) async {

@@ -4,6 +4,7 @@ import '../../models/question.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/time_ago.dart';
+import '../shared/user_avatar.dart';
 import 'tag_pill.dart';
 
 /// Reused identically on Feed, Profile (both tabs) and Search — mirrors
@@ -100,18 +101,7 @@ class QuestionCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    CircleAvatar(
-                      radius: 10,
-                      backgroundColor: AppColors.brand100,
-                      child: Text(
-                        question.author.avatar,
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.brand700,
-                        ),
-                      ),
-                    ),
+                    UserAvatar(user: question.author, radius: 10),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(

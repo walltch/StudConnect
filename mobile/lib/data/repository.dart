@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/answer.dart';
@@ -17,12 +18,15 @@ enum SortMode { recent, popular, unsolved }
 class AppRepository extends ChangeNotifier {
   AppRepository._(this._db);
 
+  static const _sessionKey = 'currentUserId';
+
   final AppDatabase _db;
   Database get _sql => _db.db;
 
   final Map<String, User> _users = {};
   final Map<String, Question> _questions = {};
   int _idCounter = 0;
+  String? _sessionUserId;
 
   static Future<AppRepository> create(AppDatabase db) async {
     final repo = AppRepository._(db);
@@ -35,6 +39,11 @@ class AppRepository extends ChangeNotifier {
       await _seed();
     }
     await _loadAll();
+    final prefs = await SharedPreferences.getInstance();
+    final savedId = prefs.getString(_sessionKey);
+    _sessionUserId = (savedId != null && _users.containsKey(savedId))
+        ? savedId
+        : null;
   }
 
   Future<void> _seed() async {
@@ -97,7 +106,26 @@ class AppRepository extends ChangeNotifier {
   // Reads
   // ---------------------------------------------------------------------
 
-  User get currentUser => _users[SeedData.currentUserId]!;
+  bool get isLoggedIn => _sessionUserId != null;
+
+  User? get currentUserOrNull =>
+      _sessionUserId == null ? null : _users[_sessionUserId];
+
+  /// Non-nullable for call sites that only run once the router has
+  /// already gated access behind a session (every screen except
+  /// welcome/signup). Throws if called while logged out.
+  User get currentUser {
+    final user = currentUserOrNull;
+    if (user == null) {
+      throw StateError('currentUser accessed while logged out');
+    }
+    return user;
+  }
+
+  /// All local accounts on this device — seed personas plus anyone who
+  /// signed up locally. Shown on the welcome screen to log back in.
+  List<User> get allUsers =>
+      _users.values.toList()..sort((a, b) => a.name.compareTo(b.name));
 
   /// Sorted most-recent-first, matching the `questions` table's default
   /// ordering loaded in [_loadAll].
@@ -347,13 +375,71 @@ class AppRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateProfile({String? school, String? field, String? year}) {
+  Future<void> updateProfile({
+    String? name,
+    String? school,
+    String? field,
+    String? year,
+    int? avatarColor,
+  }) {
     final updated = currentUser.copyWith(
+      name: name,
+      avatar: name == null ? null : User.initialsFor(name),
+      avatarColor: avatarColor,
       school: school,
       field: field,
       year: year,
     );
     return _saveUser(updated);
+  }
+
+  // ---------------------------------------------------------------------
+  // Accounts (local to this device — no password, see repository docs)
+  // ---------------------------------------------------------------------
+
+  /// Creates a new local account and logs into it immediately.
+  Future<User> signUp({
+    required String name,
+    required String school,
+    required String field,
+    required String year,
+    required int avatarColor,
+  }) async {
+    final user = User(
+      id: _newId(),
+      name: name,
+      avatar: User.initialsFor(name),
+      avatarColor: avatarColor,
+      school: school,
+      field: field,
+      year: year,
+      skills: const [],
+      reputation: 0,
+      answersCount: 0,
+      questionsCount: 0,
+      joinedAt: DateTime.now(),
+    );
+    await _sql.insert('users', user.toMap());
+    _users[user.id] = user;
+    await logIn(user.id);
+    return user;
+  }
+
+  Future<void> logIn(String userId) async {
+    if (!_users.containsKey(userId)) {
+      throw ArgumentError('Unknown user $userId');
+    }
+    _sessionUserId = userId;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_sessionKey, userId);
+    notifyListeners();
+  }
+
+  Future<void> logOut() async {
+    _sessionUserId = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_sessionKey);
+    notifyListeners();
   }
 
   Future<void> addSkill(String skill) {

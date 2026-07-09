@@ -15,7 +15,7 @@ import 'support/test_repository.dart';
 Widget _harness(AppRepository repository) {
   return ChangeNotifierProvider.value(
     value: repository,
-    child: MaterialApp.router(routerConfig: buildAppRouter()),
+    child: MaterialApp.router(routerConfig: buildAppRouter(repository)),
   );
 }
 

@@ -8,6 +8,8 @@ import '../../models/user.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/questions/question_card.dart';
+import '../../widgets/shared/avatar_color_picker.dart';
+import '../../widgets/shared/user_avatar.dart';
 
 enum _ProfileTab { questions, answers }
 
@@ -26,61 +28,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _editProfile(AppRepository repo) async {
     final user = repo.currentUser;
+    final nameController = TextEditingController(text: user.name);
     final fieldController = TextEditingController(text: user.field);
     final yearController = TextEditingController(text: user.year);
     final schoolController = TextEditingController(text: user.school);
+    var avatarColor = user.avatarColor;
 
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Modifier mon profil',
-              style: Theme.of(ctx).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: fieldController,
-              decoration: const InputDecoration(labelText: 'Filière'),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: yearController,
-              decoration: const InputDecoration(labelText: 'Année'),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: schoolController,
-              decoration: const InputDecoration(labelText: 'École'),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Enregistrer'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Modifier mon profil',
+                style: Theme.of(ctx).textTheme.titleMedium,
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              AvatarColorPicker(
+                selected: avatarColor,
+                onChanged: (c) => setModalState(() => avatarColor = c),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Nom'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: fieldController,
+                decoration: const InputDecoration(labelText: 'Filière'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: yearController,
+                decoration: const InputDecoration(labelText: 'Année'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: schoolController,
+                decoration: const InputDecoration(labelText: 'École'),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Enregistrer'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
 
     if (saved == true) {
       await repo.updateProfile(
+        name: nameController.text.trim(),
         field: fieldController.text.trim(),
         year: yearController.text.trim(),
         school: schoolController.text.trim(),
+        avatarColor: avatarColor,
       );
     }
   }
@@ -135,13 +153,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final repo = context.watch<AppRepository>();
-    final user = repo.currentUser;
+    final user = repo.currentUserOrNull;
+    if (user == null) {
+      // Briefly true between repo.logOut() notifying listeners and the
+      // router's redirect actually navigating away from this screen.
+      return const Scaffold(body: SizedBox.shrink());
+    }
     final myQuestions = repo.myQuestions;
     final myAnswered = repo.myAnsweredQuestions;
     final list = _tab == _ProfileTab.questions ? myQuestions : myAnswered;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        actions: [
+          IconButton(
+            onPressed: () => repo.logOut(),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Se déconnecter',
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
@@ -231,23 +263,7 @@ class _ProfileHeader extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: const BoxDecoration(
-                  gradient: AppColors.brandGradient,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  user.avatar,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
+              UserAvatar(user: user, radius: 28),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(

@@ -37,6 +37,7 @@ class AppDatabase {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         avatar TEXT NOT NULL,
+        avatarColor INTEGER NOT NULL,
         school TEXT NOT NULL,
         field TEXT NOT NULL,
         year TEXT NOT NULL,

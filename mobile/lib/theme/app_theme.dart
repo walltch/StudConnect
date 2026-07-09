@@ -107,7 +107,10 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface2,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w500),
+        labelStyle: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: AppColors.slate800,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         shape: const StadiumBorder(),
       ),

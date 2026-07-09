@@ -44,9 +44,8 @@ void main() {
     // Both questionsCount and answersCount happen to be 4 in seed data,
     // so this stat renders at least once rather than exactly once.
     expect(find.text('${repo.questionsCount}'), findsWidgets);
-    // Default sort is "recent": q4 is the newest, so it's the only
-    // card guaranteed to be within the initial viewport (the ListView
-    // doesn't build off-screen siblings).
+    // q4 renders within the tall test viewport regardless of exact
+    // position (the ListView doesn't build far off-screen siblings).
     expect(
       find.textContaining('Comment structurer mon rapport de stage'),
       findsOneWidget,
@@ -130,11 +129,12 @@ void main() {
     await tester.pumpWidget(_harness(repo));
     await settle(tester);
 
-    // Default sort is "recent": q4 (2026-03-10) renders first.
-    final before = repo.questionById('q4')!.upvotes;
+    // Default sort is "recent": q5 (2026-06-30, Anis's question) is now
+    // the newest and renders first.
+    final before = repo.questionById('q5')!.upvotes;
     await tester.tap(find.byIcon(Icons.keyboard_arrow_up).first);
     await settle(tester);
 
-    expect(repo.questionById('q4')!.upvotes, before + 1);
+    expect(repo.questionById('q5')!.upvotes, before + 1);
   });
 }

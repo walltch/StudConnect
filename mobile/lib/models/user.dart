@@ -1,9 +1,11 @@
-/// Mirrors the `User` interface from the web app's src/types/index.ts.
+/// Mirrors the `User` interface from the web app's src/types/index.ts,
+/// plus [avatarColor] for the local account system (signup/profile).
 class User {
   const User({
     required this.id,
     required this.name,
     required this.avatar,
+    required this.avatarColor,
     required this.school,
     required this.field,
     required this.year,
@@ -17,6 +19,9 @@ class User {
   final String id;
   final String name;
   final String avatar;
+
+  /// ARGB value (`Color.toARGB32()`), chosen from `AppColors.avatarPalette`.
+  final int avatarColor;
   final String school;
   final String field;
   final String year;
@@ -26,7 +31,18 @@ class User {
   final int questionsCount;
   final DateTime joinedAt;
 
+  /// Two-letter initials derived from a display name, e.g. "Wall Fatah" -> "WF".
+  static String initialsFor(String name) {
+    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+    final letters = parts.take(2).map((p) => p[0].toUpperCase());
+    final initials = letters.join();
+    return initials.isEmpty ? '?' : initials;
+  }
+
   User copyWith({
+    String? name,
+    String? avatar,
+    int? avatarColor,
     String? school,
     String? field,
     String? year,
@@ -36,8 +52,9 @@ class User {
   }) {
     return User(
       id: id,
-      name: name,
-      avatar: avatar,
+      name: name ?? this.name,
+      avatar: avatar ?? this.avatar,
+      avatarColor: avatarColor ?? this.avatarColor,
       school: school ?? this.school,
       field: field ?? this.field,
       year: year ?? this.year,
@@ -54,6 +71,7 @@ class User {
       id: map['id'] as String,
       name: map['name'] as String,
       avatar: map['avatar'] as String,
+      avatarColor: map['avatarColor'] as int,
       school: map['school'] as String,
       field: map['field'] as String,
       year: map['year'] as String,
@@ -73,6 +91,7 @@ class User {
       'id': id,
       'name': name,
       'avatar': avatar,
+      'avatarColor': avatarColor,
       'school': school,
       'field': field,
       'year': year,

@@ -40,7 +40,7 @@ void main() {
     await tester.pumpWidget(_harness(repo));
     await settle(tester);
 
-    expect(find.text('4 résultats'), findsOneWidget);
+    expect(find.text('5 résultats'), findsOneWidget);
   });
 
   testWidgets('typing a keyword matches content, not just title (US6)', (

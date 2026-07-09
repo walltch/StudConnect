@@ -38,7 +38,7 @@ void main() {
     final repo = (await tester.runAsync(buildTestRepository))!;
     addTearDown(() => tester.runAsync(repo.close));
     useTallTestViewport(tester);
-    await tester.pumpWidget(_harness(repo, 'q4')); // q4 has 0 answers
+    await tester.pumpWidget(_harness(repo, 'q5')); // q5 has 0 answers
     await settle(tester);
 
     expect(find.text('0 réponse'), findsOneWidget);
@@ -52,7 +52,7 @@ void main() {
     await settle(tester);
 
     expect(
-      repo.questionById('q4')!.answers.any(
+      repo.questionById('q5')!.answers.any(
         (a) => a.content == 'Voici une reponse de test bien detaillee.',
       ),
       isTrue,
@@ -84,14 +84,15 @@ void main() {
     (tester) async {
       final repo = (await tester.runAsync(buildTestRepository))!;
       addTearDown(() => tester.runAsync(repo.close));
-    useTallTestViewport(tester);
-      // q2 is authored by wall (current user) and has one unvalidated
-      // answer (a3, by alice) — the author sees "Marquer comme solution".
+      useTallTestViewport(tester);
+      // q2 is authored by wall (current user) and has two unvalidated
+      // answers (a3 by alice, a6 by charles) — the author sees "Marquer
+      // comme solution" on both; a3 renders first (created earlier).
       await tester.pumpWidget(_harness(repo, 'q2'));
       await settle(tester);
 
       expect(repo.questionById('q2')!.isSolved, isFalse);
-      await tester.tap(find.text('Marquer comme solution'));
+      await tester.tap(find.text('Marquer comme solution').first);
       await settle(tester);
 
       expect(repo.questionById('q2')!.isSolved, isTrue);
