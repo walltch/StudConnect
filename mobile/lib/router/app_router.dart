@@ -1,8 +1,8 @@
 import 'package:go_router/go_router.dart';
 
 import '../data/repository.dart';
+import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
-import '../screens/auth/welcome_screen.dart';
 import '../screens/feed/feed_screen.dart';
 import '../screens/new_question/new_question_screen.dart';
 import '../screens/profile/profile_screen.dart';
@@ -32,7 +32,7 @@ GoRouter buildAppRouter(AppRepository repo) {
     routes: [
       GoRoute(
         path: '/login',
-        builder: (context, state) => const WelcomeScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/signup',

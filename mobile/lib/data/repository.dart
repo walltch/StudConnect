@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -381,6 +384,7 @@ class AppRepository extends ChangeNotifier {
     String? field,
     String? year,
     int? avatarColor,
+    String? photoPath,
   }) {
     final updated = currentUser.copyWith(
       name: name,
@@ -389,6 +393,7 @@ class AppRepository extends ChangeNotifier {
       school: school,
       field: field,
       year: year,
+      photoPath: photoPath,
     );
     return _saveUser(updated);
   }
@@ -404,6 +409,9 @@ class AppRepository extends ChangeNotifier {
     required String field,
     required String year,
     required int avatarColor,
+    required String username,
+    required String password,
+    String photoPath = '',
   }) async {
     final user = User(
       id: _newId(),
@@ -418,12 +426,40 @@ class AppRepository extends ChangeNotifier {
       answersCount: 0,
       questionsCount: 0,
       joinedAt: DateTime.now(),
+      username: username,
+      passwordHash: _hashPassword(password),
+      photoPath: photoPath,
     );
     await _sql.insert('users', user.toMap());
     _users[user.id] = user;
     await logIn(user.id);
     return user;
   }
+
+  /// True if [username] isn't already taken by another local account
+  /// (case-insensitive) — used by the signup form's inline validation.
+  bool isUsernameAvailable(String username) {
+    final normalized = username.trim().toLowerCase();
+    return _users.values.every((u) => u.username.toLowerCase() != normalized);
+  }
+
+  /// Verifies [username]/[password] against the local accounts and logs
+  /// in on success. Returns false (no exception) on a bad match so the
+  /// login screen can show a plain inline error.
+  Future<bool> logInWithCredentials(String username, String password) async {
+    final normalized = username.trim().toLowerCase();
+    final match = _users.values.where(
+      (u) => u.username.toLowerCase() == normalized,
+    );
+    if (match.isEmpty) return false;
+    final user = match.first;
+    if (user.passwordHash != _hashPassword(password)) return false;
+    await logIn(user.id);
+    return true;
+  }
+
+  static String _hashPassword(String raw) =>
+      sha256.convert(utf8.encode(raw)).toString();
 
   Future<void> logIn(String userId) async {
     if (!_users.containsKey(userId)) {

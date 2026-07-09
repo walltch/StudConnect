@@ -8,7 +8,7 @@ import '../../models/user.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/questions/question_card.dart';
-import '../../widgets/shared/avatar_color_picker.dart';
+import '../../widgets/shared/avatar_picker.dart';
 import '../../widgets/shared/user_avatar.dart';
 
 enum _ProfileTab { questions, answers }
@@ -33,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final yearController = TextEditingController(text: user.year);
     final schoolController = TextEditingController(text: user.school);
     var avatarColor = user.avatarColor;
+    var photoPath = user.photoPath;
 
     final saved = await showModalBottomSheet<bool>(
       context: context,
@@ -54,9 +55,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: Theme.of(ctx).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
-              AvatarColorPicker(
-                selected: avatarColor,
-                onChanged: (c) => setModalState(() => avatarColor = c),
+              AvatarPicker(
+                photoPath: photoPath,
+                avatarColor: avatarColor,
+                initials: User.initialsFor(
+                  nameController.text.trim().isEmpty
+                      ? user.name
+                      : nameController.text,
+                ),
+                onPhotoChanged: (p) => setModalState(() => photoPath = p),
+                onColorChanged: (c) => setModalState(() => avatarColor = c),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -99,6 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         year: yearController.text.trim(),
         school: schoolController.text.trim(),
         avatarColor: avatarColor,
+        photoPath: photoPath,
       );
     }
   }

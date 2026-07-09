@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 import '../models/answer.dart';
 import '../models/question.dart';
 import '../models/tag.dart';
@@ -12,6 +16,12 @@ import '../models/user.dart';
 class SeedData {
   SeedData._();
 
+  /// Same demo password for every seed account (`"password"`), documented
+  /// on the login screen — this is a local-only account system, not a
+  /// secured multi-device one.
+  static String _hash(String raw) => sha256.convert(utf8.encode(raw)).toString();
+  static final String demoPasswordHash = _hash('password');
+
   static final alice = User(
     id: 'alice',
     name: 'Alice Moreau',
@@ -25,6 +35,8 @@ class SeedData {
     answersCount: 47,
     questionsCount: 12,
     joinedAt: DateTime.parse('2024-09-01'),
+    username: 'alice',
+    passwordHash: demoPasswordHash,
   );
 
   static final bob = User(
@@ -40,6 +52,8 @@ class SeedData {
     answersCount: 8,
     questionsCount: 23,
     joinedAt: DateTime.parse('2025-09-15'),
+    username: 'bob',
+    passwordHash: demoPasswordHash,
   );
 
   static final clara = User(
@@ -55,6 +69,8 @@ class SeedData {
     answersCount: 31,
     questionsCount: 9,
     joinedAt: DateTime.parse('2024-09-01'),
+    username: 'clara',
+    passwordHash: demoPasswordHash,
   );
 
   static final wall = User(
@@ -70,11 +86,13 @@ class SeedData {
     answersCount: 18,
     questionsCount: 6,
     joinedAt: DateTime.parse('2025-12-20'),
+    username: 'wall',
+    passwordHash: demoPasswordHash,
   );
 
   static final anis = User(
     id: 'anis',
-    name: 'Anis Boua',
+    name: 'Anis Boix',
     avatar: 'AB',
     avatarColor: 0xFFD97706, // amber
     school: 'ESGI Bordeaux',
@@ -85,6 +103,8 @@ class SeedData {
     answersCount: 6,
     questionsCount: 1,
     joinedAt: DateTime.parse('2025-09-08'),
+    username: 'anis',
+    passwordHash: demoPasswordHash,
   );
 
   static final samy = User(
@@ -100,6 +120,8 @@ class SeedData {
     answersCount: 4,
     questionsCount: 2,
     joinedAt: DateTime.parse('2025-09-08'),
+    username: 'samy',
+    passwordHash: demoPasswordHash,
   );
 
   static final charles = User(
@@ -115,6 +137,8 @@ class SeedData {
     answersCount: 5,
     questionsCount: 0,
     joinedAt: DateTime.parse('2025-09-08'),
+    username: 'charles',
+    passwordHash: demoPasswordHash,
   );
 
   static List<User> get users => [alice, bob, clara, wall, anis, samy, charles];

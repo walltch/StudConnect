@@ -173,7 +173,7 @@ void main() {
 
     test('allUsers lists every seed persona, including teammates', () {
       final names = repo.allUsers.map((u) => u.name).toSet();
-      expect(names, containsAll(['Anis Boua', 'Samy Berrari', 'Charles Keita']));
+      expect(names, containsAll(['Anis Boix', 'Samy Berrari', 'Charles Keita']));
     });
 
     test('logIn switches currentUser and persists across a fresh repo', () async {
@@ -204,6 +204,8 @@ void main() {
       final before = repo.allUsers.length;
       final created = await repo.signUp(
         name: 'Léa Martin',
+        username: 'lea.martin',
+        password: 'secret',
         school: 'ESGI Bordeaux',
         field: 'Bachelor Réseaux',
         year: 'B1',
@@ -216,6 +218,32 @@ void main() {
       expect(repo.currentUser.name, 'Léa Martin');
       expect(repo.currentUser.avatar, 'LM');
       expect(repo.currentUser.reputation, 0);
+    });
+
+    test('isUsernameAvailable is false for a taken username', () {
+      expect(repo.isUsernameAvailable('bob'), isFalse);
+      expect(repo.isUsernameAvailable('BOB'), isFalse); // case-insensitive
+      expect(repo.isUsernameAvailable('someone-new'), isTrue);
+    });
+
+    test('logInWithCredentials succeeds with the right password', () async {
+      await repo.logOut();
+      final ok = await repo.logInWithCredentials('bob', 'password');
+      expect(ok, isTrue);
+      expect(repo.currentUser.id, 'bob');
+    });
+
+    test('logInWithCredentials fails with the wrong password', () async {
+      await repo.logOut();
+      final ok = await repo.logInWithCredentials('bob', 'wrong');
+      expect(ok, isFalse);
+      expect(repo.isLoggedIn, isFalse);
+    });
+
+    test('logInWithCredentials fails for an unknown username', () async {
+      await repo.logOut();
+      final ok = await repo.logInWithCredentials('nobody', 'password');
+      expect(ok, isFalse);
     });
   });
 

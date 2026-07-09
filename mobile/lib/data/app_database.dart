@@ -45,7 +45,10 @@ class AppDatabase {
         reputation INTEGER NOT NULL,
         answersCount INTEGER NOT NULL,
         questionsCount INTEGER NOT NULL,
-        joinedAt TEXT NOT NULL
+        joinedAt TEXT NOT NULL,
+        username TEXT NOT NULL,
+        passwordHash TEXT NOT NULL,
+        photoPath TEXT
       )
     ''');
 

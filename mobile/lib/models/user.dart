@@ -14,6 +14,9 @@ class User {
     required this.answersCount,
     required this.questionsCount,
     required this.joinedAt,
+    required this.username,
+    required this.passwordHash,
+    this.photoPath = '',
   });
 
   final String id;
@@ -30,6 +33,19 @@ class User {
   final int answersCount;
   final int questionsCount;
   final DateTime joinedAt;
+
+  /// Login identifier, unique across accounts (compared case-insensitively).
+  final String username;
+
+  /// SHA-256 hex digest — local-only account system, unsalted is an
+  /// accepted simplification here (see AppRepository docs).
+  final String passwordHash;
+
+  /// Local file path to a chosen avatar photo. Empty string means "no
+  /// photo, fall back to the colored initials circle" — chosen over a
+  /// nullable sentinel so `copyWith` can express "remove the photo"
+  /// without a separate flag.
+  final String photoPath;
 
   /// Two-letter initials derived from a display name, e.g. "Wall Fatah" -> "WF".
   static String initialsFor(String name) {
@@ -49,6 +65,7 @@ class User {
     List<String>? skills,
     int? answersCount,
     int? questionsCount,
+    String? photoPath,
   }) {
     return User(
       id: id,
@@ -63,6 +80,9 @@ class User {
       answersCount: answersCount ?? this.answersCount,
       questionsCount: questionsCount ?? this.questionsCount,
       joinedAt: joinedAt,
+      username: username,
+      passwordHash: passwordHash,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
 
@@ -83,6 +103,9 @@ class User {
       answersCount: map['answersCount'] as int,
       questionsCount: map['questionsCount'] as int,
       joinedAt: DateTime.parse(map['joinedAt'] as String),
+      username: map['username'] as String,
+      passwordHash: map['passwordHash'] as String,
+      photoPath: map['photoPath'] as String? ?? '',
     );
   }
 
@@ -100,6 +123,9 @@ class User {
       'answersCount': answersCount,
       'questionsCount': questionsCount,
       'joinedAt': joinedAt.toIso8601String(),
+      'username': username,
+      'passwordHash': passwordHash,
+      'photoPath': photoPath,
     };
   }
 }
